@@ -29,6 +29,10 @@ impl From<(f32, f32)> for SpriteSize {
 // endregion: --- Common Components
 
 // region:    --- Player Components
+// 
+
+#[derive(Component)]
+pub struct Cannon;
 #[derive(Component)]
 pub struct Player;
 

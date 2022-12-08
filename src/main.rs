@@ -3,6 +3,7 @@
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
+use cannon::CannonPlugin;
 use components::{
 	Enemy, Explosion, ExplosionTimer, ExplosionToSpawn, FromEnemy, FromPlayer, Laser, Movable,
 	Player, SpriteSize, Velocity,
@@ -11,6 +12,7 @@ use enemy::EnemyPlugin;
 use player::PlayerPlugin;
 use std::collections::HashSet;
 
+mod cannon;
 mod components;
 mod enemy;
 mod player;
@@ -65,6 +67,21 @@ struct GameTextures {
 struct EnemyCount(u32);
 
 #[derive(Resource)]
+struct Angle {
+	degrees: f64, // future cannon angle
+}
+
+impl Default for Angle {
+	fn default() -> Self {
+		Self { degrees: 45. }
+	}
+}
+impl Angle {
+	pub fn increase_angle(&mut self) {
+		self.degrees = 90.;
+	}
+}
+#[derive(Resource)]
 struct PlayerState {
 	on: bool,       // alive
 	last_shot: f64, // -1 if not shot
@@ -95,21 +112,21 @@ fn main() {
 		.insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
 		.add_plugins(DefaultPlugins.set(WindowPlugin {
 			window: WindowDescriptor {
-				title: "Rust Invaders!".to_string(),
-				width: 598.0,
-				height: 676.0,
+				title: "Cannon Wars".to_string(),
+				width: 1200.0,
+				height: 800.0,
 				..Default::default()
 			},
 			..Default::default()
 		}))
-		.add_plugin(PlayerPlugin)
-		.add_plugin(EnemyPlugin)
+		.add_plugin(CannonPlugin)
+		// .add_plugin(EnemyPlugin)
 		.add_startup_system(setup_system)
-		.add_system(movable_system)
-		.add_system(player_laser_hit_enemy_system)
-		.add_system(enemy_laser_hit_player_system)
-		.add_system(explosion_to_spawn_system)
-		.add_system(explosion_animation_system)
+		// .add_system(movable_system)
+		// .add_system(player_laser_hit_enemy_system)
+		// .add_system(enemy_laser_hit_player_system)
+		// .add_system(explosion_to_spawn_system)
+		// .add_system(explosion_animation_system)
 		.run();
 }
 
