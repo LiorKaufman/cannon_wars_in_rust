@@ -48,7 +48,7 @@ fn player_spawn_system(
 			},
 			..Default::default()
 		})
-		.insert(Cannon)
+		.insert(Cannon{rotation_speed: 80. })
 		.insert(SpriteSize::from(PLAYER_SIZE))
 		.insert(Movable { auto_despawn: false })
 		.insert(Velocity { x: 0., y: 0. });

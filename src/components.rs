@@ -10,6 +10,12 @@ pub struct Velocity {
 }
 
 #[derive(Component)]
+pub struct Rotation {
+	pub x: f32,
+	pub y: f32,
+	pub z: f32,
+}
+#[derive(Component)]
 pub struct Movable {
 	pub auto_despawn: bool,
 }
@@ -29,10 +35,12 @@ impl From<(f32, f32)> for SpriteSize {
 // endregion: --- Common Components
 
 // region:    --- Player Components
-// 
+//
 
 #[derive(Component)]
-pub struct Cannon;
+pub struct Cannon{
+    pub rotation_speed: f32,
+}
 #[derive(Component)]
 pub struct Player;
 
