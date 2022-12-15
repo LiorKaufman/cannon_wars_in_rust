@@ -1,8 +1,10 @@
 use bevy::{math::Vec3Swizzles, prelude::*, time::FixedTimestep};
+use bevy_inspector_egui::{Inspectable, RegisterInspectable, WorldInspectorPlugin};
 
 const BOUNDS: Vec2 = Vec2::new(1200.0, 640.0);
 const TIME_STEP: f32 = 1.0 / 60.0;
-
+#[derive(Inspectable, Component)]
+struct InspectableType;
 #[derive(Component)]
 pub struct GroundVelocity {
 	x_pos: f32,
@@ -11,12 +13,14 @@ pub struct GroundVelocity {
 #[derive(Component, Deref, DerefMut)]
 struct Velocity(Vec2);
 
-#[derive(Component)]
+#[derive(Reflect, Component, Default)]
+#[reflect(Component)]
 struct Player {
 	/// linear speed in meters per second
 	movement_speed: f32,
 	/// rotation speed in radians per second
 	rotation_speed: f32,
+	is_something: bool,
 }
 
 #[derive(Component)]
@@ -29,6 +33,9 @@ fn main() {
 	App::new()
 		.add_plugins(DefaultPlugins)
 		.add_startup_system(setup)
+		.add_plugin(WorldInspectorPlugin::new())
+		.register_inspectable::<InspectableType>()
+		.register_type::<Player>()
 		.add_system(sprite_movement)
 		// .add_plugin(CannonPlugin)
 		.run();
@@ -49,6 +56,21 @@ fn setup(
 		Player {
 			movement_speed: 500.,
 			rotation_speed: 300.,
+			is_something: true,
+		},
+		GroundVelocity { x_pos: 0., y_pos: 0. },
+	));
+	commands.spawn((
+		SpriteBundle {
+			texture: asset_server.load("cannon.png"),
+			transform: Transform::from_xyz(0.0 + 300., 0.0, 0.0),
+			..default()
+		},
+		Direction::Down,
+		Player {
+			movement_speed: 300.,
+			rotation_speed: 300.,
+			is_something: true,
 		},
 		GroundVelocity { x_pos: 0., y_pos: 0. },
 	));
@@ -74,9 +96,12 @@ fn sprite_movement(
 		let mut movement_factor = 0.0;
 		let mut x_move = velocity.x_pos;
 		let mut y_move = velocity.y_pos;
-		match *logo {
-			Direction::Up => transform.translation.y += 150. * time.delta_seconds(),
-			Direction::Down => transform.translation.y -= 150. * time.delta_seconds(),
+		let do_something = player.is_something;
+		if do_something {
+			match *logo {
+				Direction::Up => transform.translation.y += 150. * time.delta_seconds(),
+				Direction::Down => transform.translation.y -= 150. * time.delta_seconds(),
+			}
 		}
 
 		if transform.translation.y > 200. {
@@ -85,14 +110,17 @@ fn sprite_movement(
 			*logo = Direction::Up;
 		}
 
+		if keyboard_input.pressed(KeyCode::M) {
+			player.is_something = !do_something;
+		}
 		if keyboard_input.pressed(KeyCode::Left) {
 			// rotation_factor += 1.0;
-			x_move -= 3.
+			x_move -= 10.;
 		}
 
 		if keyboard_input.pressed(KeyCode::Right) {
 			// rotation_factor -= 1.0;
-			x_move += 3.;
+			x_move += 10.;
 		}
 		// update the ship rotation around the Z axis (perpendicular to the 2D plane of the screen)
 		transform.rotate_z(rotation_factor * player.rotation_speed * TIME_STEP);
@@ -110,6 +138,7 @@ fn sprite_movement(
 		let extents = Vec3::from((BOUNDS / 2.0, 0.0));
 		transform.translation = transform.translation.min(extents).max(-extents);
 		transform.translation.x += x_move;
+		transform.translation.y += y_move;
 		// transform.translation.y += y_move * time.delta_seconds();
 	}
 }
